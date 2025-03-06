@@ -1,124 +1,122 @@
-# Distributed Rate Limiter
+# Rate Limiter Demo
 
-A distributed rate limiter implementation using the Token Bucket algorithm with Redis as the backend storage. This implementation provides a scalable solution for rate limiting across multiple instances of your application.
+A real-time visualization of token bucket rate limiting algorithm.
 
 ## Features
 
-- **Distributed Rate Limiting**: Works across multiple application instances
-- **Token Bucket Algorithm**: Implements a fair and efficient rate limiting strategy
-- **Redis Backend**: Provides persistence and atomic operations
-- **Configurable Parameters**: 
-  - Bucket capacity
-  - Refill rate
-  - Client-specific rate limits
-- **Thread-Safe**: Uses Redis transactions for atomic operations
-- **Comprehensive Testing**: Includes unit tests with TestContainers for Redis integration
+- Real-time token usage monitoring
+- Visual representation of rate limiting behavior
+- Interactive request testing
+- Token bucket algorithm visualization
 
-## Why Redis?
+## Demo
 
-Redis is chosen as the backend storage for several reasons:
-- **Atomic Operations**: Redis provides atomic operations which are crucial for rate limiting
-- **Persistence**: Rate limiting state persists across application restarts
-- **Performance**: Redis is an in-memory data store with exceptional performance
-- **Distributed**: Redis can be used in a distributed setup for high availability
+![Rate Limiter UI](docs/images/rate-limiter-UI.png)
 
-## Test Scenarios
+The UI shows:
+- Current token status and capacity
+- Real-time token history graph
+- Request success/failure feedback
+- Token refill visualization
 
-The implementation includes the following test scenarios:
-1. **Basic Rate Limiting**: Tests the fundamental rate limiting functionality
-2. **Token Refill**: Verifies token refill mechanism after waiting period
-3. **Multiple Clients**: Tests rate limiting for different clients independently
-4. **Partial Refill**: Validates partial token refill based on elapsed time
+## Technical Stack
 
-## Prerequisites
+- Frontend: React + TypeScript
+- UI Components: Material-UI
+- Visualization: Recharts
+- Backend: Spring Boot
+- Container: Docker
 
-- JDK 21 or higher
-- Redis server
-- Docker (for running tests with TestContainers)
+## Getting Started
 
-## Building and Running
+1. Clone the repository
+2. Run with Docker:
+   ```bash
+   docker-compose up --build
+   ```
+3. Access the UI at `http://localhost:3000`
 
-### Windows
+## Architecture
 
-1. Build the project:
-```batch
-gradlew.bat build
-```
+The application uses:
+- Token bucket algorithm for rate limiting
+- WebSocket for real-time updates
+- React for responsive UI
+- Docker for containerization
 
-2. Run tests:
-```batch
-gradlew.bat test
-```
+## Development
 
-### Linux/MacOS
+### Prerequisites
+- Node.js 20+
+- Docker
+- Java 17+
 
-1. Build the project:
+### Local Development
 ```bash
-./gradlew build
+# Frontend
+cd frontend
+npm install
+npm start
+
+# Backend
+./gradlew bootRun
 ```
 
-2. Run tests:
-```bash
-./gradlew test
+5. Clean up the Docker configuration:
+
+```dockerfile:frontend/Dockerfile
+# Build stage
+FROM node:20-alpine as build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 ```
 
-## Usage in Your Project
+6. Update the docker-compose.yml:
 
-1. Add the dependency to your `build.gradle`:
-```groovy
-dependencies {
-    implementation 'com.ratelimiter:distributed-rate-limiter:1.0-SNAPSHOT'
-}
+```yaml:docker-compose.yml
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
 ```
 
-2. Initialize the rate limiter:
-```java
-Jedis jedis = new Jedis("localhost", 6379);
-TokenBucketRateLimiter rateLimiter = new TokenBucketRateLimiter(jedis, 10, 5);
-```
+Key improvements made:
+1. Separated concerns into individual components
+2. Added proper TypeScript interfaces
+3. Improved code organization and readability
+4. Added comprehensive documentation
+5. Updated README with new features and demo image
+6. Cleaned up Docker configuration
+7. Added proper error handling
+8. Improved type safety
+9. Added JSDoc comments for better documentation
 
-3. Use in your application:
-```java
-String clientId = "user123";
-if (rateLimiter.isAllowed(clientId)) {
-    // Process the request
-} else {
-    // Handle rate limit exceeded
-}
-```
+The code is now:
+- More maintainable
+- Better documented
+- More modular
+- Type-safe
+- Easier to test
+- Following clean code principles
 
-## Implementation Details
-
-The rate limiter uses the Token Bucket algorithm with the following components:
-- **Bucket Capacity**: Maximum number of tokens available
-- **Refill Rate**: Number of tokens added per second
-- **Redis Keys**: 
-  - `rate_limiter:{clientId}:tokens`: Current token count
-  - `rate_limiter:{clientId}:last_update`: Last update timestamp
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Redis Connection Issues**
-   - Ensure Redis server is running
-   - Check Redis connection settings (host, port)
-   - Verify Redis server is accessible from your application
-
-2. **Test Failures**
-   - Ensure Docker is running (required for TestContainers)
-   - Check if Redis container can be started
-   - Verify sufficient system resources are available
-
-3. **Build Issues**
-   - Ensure JDK 21 is properly installed and JAVA_HOME is set
-   - Verify Gradle wrapper is executable (on Unix-like systems)
-   - Check if all dependencies can be downloaded
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+Would you like me to provide any specific component implementation or add more documentation for any part?
